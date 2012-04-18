@@ -1,5 +1,4 @@
-var database = require('../database');
-var client = database.client;
+var Person  = require('../models/person').Person;
 
 /*
  * GET home page.
@@ -9,9 +8,17 @@ exports.index = function(req, res){
 
   var people = [];
 
-  client.incr('motiveworld:people.next_id',
-      function(err, next_id)
+  person = new Person();
+
+  latest_increment = 0;
+
+  person.incrementKey(function(err, new_increment)
       {
+        res.render('index', { title: 'MotiveWorld', increment : new_increment})
+      }
+  );
+
+  /*
         client.hmset(
         'motiveworld:people:' + next_id,
         {
@@ -36,8 +43,5 @@ exports.index = function(req, res){
             }
           }
         );
-      }
-  );
-
-  res.render('index', { title: 'MotiveWorld' })
+  t remote add origin git@github.com:tristil/motiveworld.gitkkkkkk*/
 };
