@@ -5,43 +5,34 @@ var Person  = require('../models/person').Person;
  */
 
 exports.index = function(req, res){
+  this.person_model  = new Person();
 
-  var people = [];
+  this.display_people = function()
+  {
+    var people = [];
 
-  person = new Person();
-
-  latest_increment = 0;
-
-  person.incrementKey(function(err, new_increment)
-      {
-        res.render('index', { title: 'MotiveWorld', increment : new_increment})
-      }
-  );
-
-  /*
-        client.hmset(
-        'motiveworld:people:' + next_id,
+    this.person_model.findAll(
+        function(err, people)
         {
-          name      : 'Barb',
-          religion  : 'Christian'
+          res.render('index', { title: 'MotiveWorld', people : people});
         }
-        );
+    );
+  };
 
-        client.lpush('motiveworld:people.ids', next_id);
+  if(req.body.name)
+  {
+    var person = this.person_model.create();
+    person.setData({name : req.body.name});
+    person.save(
+        function(err, next_id)
+        {
+          this.display_people();
+        }
+    );
+  }
+  else
+  {
+    this.display_people();
+  }
 
-        var people_ids = client.lrange('motiveworld:people.ids', 0, -1,
-          function(err, replies)
-          {
-            for(var i = 0; i < replies.length; i++)
-            {
-              var id = replies[i];
-              client.hgetall('motiveworld:people:' + id, function(err, obj)
-                {
-                  people.push(obj);
-                }
-                );
-            }
-          }
-        );
-  t remote add origin git@github.com:tristil/motiveworld.gitkkkkkk*/
 };

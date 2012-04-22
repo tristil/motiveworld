@@ -17,6 +17,12 @@ var Record = function(model, data)
     throw new Error('Record must be created with a model');
   }
 
+  this.setId = function(id)
+  {
+    this.id = parseInt(id);
+
+  };
+
   this.setData = function(data)
   {
     this.data = data;
@@ -33,7 +39,7 @@ var Record = function(model, data)
     this.model.save(this.data,
         function(err, next_id)
         {
-          self.id = next_id;
+          self.setId(next_id);
           if(typeof(callback) != 'undefined')
           {
             callback(err, next_id);

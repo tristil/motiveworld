@@ -85,6 +85,28 @@ describe('BaseModel', function()
         }
         );
 
+      it('should add saved record to ids list', function(done)
+      {
+          var base_model = new BaseModel();
+
+          base_model.save(
+          {
+            name      : 'Joe',
+            haircolor : 'brown'
+          },
+          function(err, next_id)
+          {
+            base_model.getConnection().lrange('motiveworld:general.next_ids',0,0,
+              function(err, records)
+              {
+                records.should.eql(['1']);
+                done();
+              }
+            );
+          }
+          );
+      });
+
       it('should retrieve a saved hash', function(done)
         {
           var base_model = new BaseModel();
@@ -142,6 +164,29 @@ describe('BaseModel', function()
           }
           );
         }
+        );
+
+        it('should find all records for the collection', function(done)
+            {
+              var base_model = new BaseModel();
+              base_model.save({ name : 'Joe', haircolor : 'brown'},
+              function(err, next_id)
+              {
+                if(err)
+                {
+                  throw err;
+                }
+                base_model.findAll(
+                function(err, records)
+                {
+                  records.should.be.an.instanceof(Array);
+                  records[0].should.be.an.instanceof(Record);
+                  records[0].getData().should.eql({name : 'Joe', haircolor : 'brown'});
+                  done();
+                }
+                );
+              });
+            }
         );
 
     }

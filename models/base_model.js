@@ -1,4 +1,5 @@
-var Record = require('./record').Record;
+var Record = require('./record').Record,
+    async = require('async');
 
 module.exports.BaseModel = function (options)
 {
@@ -22,6 +23,11 @@ module.exports.BaseModel = function (options)
     return this.domain + ':' + this.collection;
   };
 
+  this.getIdsString = function()
+  {
+    return this.domain + ':' + this.collection + '.next_ids';
+  };
+
   this.getRecordKey = function(id)
   {
     return this.getBaseString() + ':' + id;
@@ -38,11 +44,11 @@ module.exports.BaseModel = function (options)
     this.getConnection().incr(key, function(err, id)
         {
           if(typeof(callback) != 'undefined')
-          {
-            callback(err, id);
-          }
+    {
+      callback(err, id);
+    }
         }
-    );
+        );
   }
 
   this.save = function(hash, callback)
@@ -54,17 +60,20 @@ module.exports.BaseModel = function (options)
 
     var connection = this.getConnection();
     var base_string = this.getBaseString();
+    var ids_string = this.getIdsString();
+
     this.incrementKey(
         function(err, next_id)
         {
           var key = base_string + ':' + next_id;
+          connection.lpush(ids_string, next_id);
           connection.hmset(key, hash);
           if(typeof(callback) != 'undefined')
-          {
-            callback(err, next_id);
-          }
+    {
+      callback(err, next_id);
+    }
         }
-    );
+        );
   };
 
   this.update= function(id, hash, callback)
@@ -86,9 +95,9 @@ module.exports.BaseModel = function (options)
     connection.hmset(key, hash, function(err, obj)
         {
           if(typeof(callback) != 'undefined')
-          {
-            callback(err);
-          }
+    {
+      callback(err);
+    }
         }
         );
 
@@ -102,11 +111,11 @@ module.exports.BaseModel = function (options)
     this.getConnection().hgetall(key, function(err, obj)
         {
           var record = new Record(self, obj);
-          record.id = id;
+          record.setId(id);
           if(typeof(callback) != 'undefined')
-          {
-            callback(err, record);
-          }
+    {
+      callback(err, record);
+    }
         }
         );
   };
@@ -114,6 +123,49 @@ module.exports.BaseModel = function (options)
   this.create = function()
   {
     return new Record(this);
+  }
+
+  this.findAll = function(callback)
+  {
+    var self = this;
+    this.getConnection().lrange(this.getIdsString(), 0,-1, function(err, ids)
+        {
+          if(err)
+    {
+      throw err;
+    }
+
+    var fetch_requests = [];
+
+    for(var i = 0; i < ids.length; i++)
+    {
+      var id = ids[i];
+
+      var request = (function(id) {
+        return (function(cb)
+        {
+          self.findById(id,
+            function(err, record)
+            {
+              cb(err, record);
+            }
+            );
+        });
+
+      })(id);
+
+      fetch_requests.push(request);
+    }
+
+    async.parallel(
+        fetch_requests,
+        function(err, results)
+        {
+          callback(err, results);
+        }
+        );
+        }
+    );
   }
 
 };
