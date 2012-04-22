@@ -1,6 +1,7 @@
 redis = require('redis'),
 DatabaseManager = require('../database').DatabaseManager,
-BaseModel = require('../models/base_model').BaseModel;
+BaseModel = require('../models/base_model').BaseModel,
+Record = require('../models/record').Record;
 
 DatabaseManager.test = true;
 
@@ -41,23 +42,30 @@ describe('BaseModel', function()
         }
         );
 
-      it('should set and retrieve data', function()
+      it('should create new records', function()
+          {
+            var base_model = new BaseModel();
+            var record = base_model.create();
+          }
+      );
+
+      it('save should require data', function()
         {
           var base_model = new BaseModel();
-          base_model.setData(
-          {
-            name : 'Joe',
-            haircolor : 'brown'
-          }
-          );
+          (function() {
+            base_model.save();
+              }).should.throw();
 
-          base_model.getData().should.eql({name : 'Joe', haircolor : 'brown'});
+          (function() {
+            base_model.save({name : 'Joe'});
+          }).should.not.throw();
         }
-        );
+      );
 
       it('should save a new hash', function(done)
         {
           var base_model = new BaseModel();
+
           base_model.incrementKey(
             function(err, first_next_id)
             {
@@ -87,13 +95,47 @@ describe('BaseModel', function()
           },
           function(err, next_id)
           {
-            base_model.findById(next_id, function(err, hash)
+            base_model.findById(next_id, function(err, record)
               {
-                hash.should.eql({
+                record.should.be.an.instanceof(Record);
+                record.getData().should.eql({
                   name      : 'Joe',
                   haircolor : 'brown'
                 });
                 done();
+              }
+            );
+          }
+          );
+        }
+        );
+
+      it('should update a saved hash', function(done)
+        {
+          var base_model = new BaseModel();
+          base_model.save(
+          {
+            name      : 'Joe',
+            haircolor : 'brown'
+          },
+          function(err, next_id)
+          {
+            base_model.update(
+              next_id,
+              {
+                name      : 'Bob',
+                haircolor : 'blonde'
+              },
+              function(err)
+              {
+                base_model.findById(next_id, function(err, record)
+                {
+                  record.getData().should.eql({
+                    name      : 'Bob',
+                    haircolor : 'blonde'
+                  });
+                  done();
+                });
               }
             );
           }
