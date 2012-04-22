@@ -102,6 +102,7 @@ module.exports.BaseModel = function (options)
     this.getConnection().hgetall(key, function(err, obj)
         {
           var record = new Record(self, obj);
+          record.id = id;
           if(typeof(callback) != 'undefined')
           {
             callback(err, record);

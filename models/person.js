@@ -7,8 +7,10 @@ var Person = function()
   {
     Person.super_.call(this);
   };
-
   this.init();
+
+  this.domain = 'motiveworld';
+  this.collection = 'people';
 };
 
 util.inherits(Person, BaseModel);

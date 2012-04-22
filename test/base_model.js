@@ -102,6 +102,7 @@ describe('BaseModel', function()
                   name      : 'Joe',
                   haircolor : 'brown'
                 });
+                record.getId().should.eql(next_id);
                 done();
               }
             );
