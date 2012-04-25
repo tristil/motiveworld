@@ -1,11 +1,40 @@
-<form method='post'>
+<script>
+  var socket = io.connect('http://stupididea.com:8081');
+  socket.on('person-added', function (data) {
+    console.log('Woah! A person was added:' + data.name);
+  });
+
+  $(document).ready(
+  function()
+  {
+    $('#add-person').submit(
+    function(event)
+    {
+      $.ajax(
+      {
+        type    : 'POST',
+        data    : $('#add-person').serialize(),
+        success : function(data)
+        {
+          console.log(data);
+        }
+      }
+      );
+      return false;
+    }
+    );
+  });
+
+</script>
+
+<form id='add-person' method='post'>
   <div>Name: <input type='text' name='name' /></div>
   <input type='submit' />
 </form>
 
 <h2>People</h2>
 <ul>
-<% for(var i = 0; i < people.length; i++) { %>
+  <% for(var i = 0; i < people.length; i++) { %>
   <li><%= people[i].data.name %> </li>
-<% } %>
+  <% } %>
 </ul>

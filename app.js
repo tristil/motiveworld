@@ -8,6 +8,8 @@ var express = require('express')
 
 var app = module.exports = express.createServer();
 
+var io = require('socket.io').listen(app);
+
 // Configuration
 
 app.configure(function(){
@@ -28,9 +30,9 @@ app.configure('production', function(){
 });
 
 // Routes
-app.get('/', routes.index);
-app.post('/', routes.index);
+routes.index(app, io);
 
 app.listen(8081, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
+
